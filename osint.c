@@ -1,8 +1,5 @@
 
-#include "SDL.h"
-#include "SDL_image.h"
-#include "SDL_gfxPrimitives.h"
-#include "SDL_rotozoom.h"
+#include "SDL/SDL.h"
 
 #include "osint.h"
 #include "e8910.h"
@@ -12,7 +9,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+#ifdef EMSCRIPTEN
 #include <emscripten.h>
+#endif
 
 #define EMU_TIMER 20 /* the emulators heart beats at 20 milliseconds */
 
@@ -253,13 +252,6 @@ void osint_emuloop(){
 }
 
 void load_overlay(const char *filename){
-	SDL_Surface *image;
-	image = IMG_Load(filename);
-	if(image){
-		overlay_original = image;
-	}else{
-		fprintf(stderr, "IMG_Load: %s\n", IMG_GetError());
-	}
 }
 
 int main(int argc, char *argv[]){
@@ -279,7 +271,11 @@ int main(int argc, char *argv[]){
 
 	e8910_init_sound();
 	osint_emuloop();
+#ifdef EMSCRIPTEN
 	emscripten_set_main_loop(mainloop, 60, 1);
+#else
+	for(;;)mainloop();
+#endif
 	e8910_done_sound();
 	SDL_Quit();
 
